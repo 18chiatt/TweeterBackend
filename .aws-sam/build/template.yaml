@@ -1,0 +1,9 @@
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: Handlers.UserHandler
+      CodeUri: Function
+      Runtime: java8.al2
+      Timeout: 300
+      MemorySize: 128
