@@ -1,7 +1,6 @@
 package Services;
 
 import DAO.UserDAO;
-import DAO.UserStatsDAO;
 import junit.framework.TestCase;
 import model.Response.UserResponse;
 import model.request.UserRequest;

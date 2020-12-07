@@ -1,7 +1,7 @@
 package Services;
 
 import DAO.AuthDAO;
-import DAO.StatusDAO;
+import DAO.StoryDAO;
 import junit.framework.TestCase;
 import model.Response.PostStatusResponse;
 import model.domain.Status;
@@ -14,7 +14,7 @@ public class PostStatusServiceTest extends TestCase {
 
     public void testPostStatus() {
         AuthDAO mock = mock(AuthDAO.class);
-        StatusDAO mockStatus = mock(StatusDAO.class);
+        StoryDAO mockStatus = mock(StoryDAO.class);
 
         PostStatusRequest in = new PostStatusRequest();
         in.setAuthToken("1234");

@@ -1,7 +1,7 @@
 package Handlers;
 
 import DAO.AuthDAO;
-import DAO.StatusDAO;
+import DAO.StoryDAO;
 import Services.PostStatusService;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -13,6 +13,6 @@ public class PostStatusHandler  implements RequestHandler<PostStatusRequest, Pos
 
     @Override
     public PostStatusResponse handleRequest(PostStatusRequest postStatusRequest, Context context) {
-        return new PostStatusService(new AuthDAO(),new StatusDAO()).postStatus(postStatusRequest);
+        return new PostStatusService(new AuthDAO(),new StoryDAO()).postStatus(postStatusRequest);
     }
 }

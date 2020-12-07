@@ -1,5 +1,7 @@
 package Handlers;
 
+import DAO.AuthDAO;
+import DAO.ImageDAO;
 import DAO.UserDAO;
 import Services.RegisterService;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -12,7 +14,7 @@ public class RegisterHandler implements RequestHandler<RegisterRequest, Register
 
     @Override
     public RegisterResponse handleRequest(RegisterRequest registerRequest, Context context) {
-        return new RegisterService(new UserDAO()).register(registerRequest);
+        return new RegisterService(new UserDAO(),new ImageDAO()).register(registerRequest);
 
     }
 }

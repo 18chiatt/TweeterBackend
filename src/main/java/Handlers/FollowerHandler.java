@@ -1,6 +1,7 @@
 package Handlers;
 
-import DAO.FollowerDAO;
+import DAO.BeingFollowedDAO;
+import DAO.FollowingDAO;
 import Services.FollowerService;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -14,6 +15,6 @@ public class FollowerHandler implements RequestHandler<FollowerRequest,FollowerR
 
     @Override
     public FollowerResponse handleRequest(FollowerRequest followerRequest, Context context) {
-        return new FollowerService(new FollowerDAO()).getFollower(followerRequest);
+        return new FollowerService(new BeingFollowedDAO()).getFollower(followerRequest);
     }
 }

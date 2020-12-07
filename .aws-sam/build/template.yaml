@@ -2,7 +2,7 @@ Resources:
   Function:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: Handlers.UserHandler
+      Handler: Handlers.SQSHandler
       CodeUri: Function
       Runtime: java8.al2
       Timeout: 300

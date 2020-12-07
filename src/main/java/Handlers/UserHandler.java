@@ -1,7 +1,6 @@
 package Handlers;
 
 import DAO.UserDAO;
-import DAO.UserStatsDAO;
 import Services.UserService;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

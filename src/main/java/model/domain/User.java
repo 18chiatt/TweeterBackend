@@ -1,6 +1,7 @@
 package model.domain;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -48,6 +49,7 @@ public class User implements Serializable {
     @Expose(serialize = true, deserialize = true)
     private String lastName;
     @Expose(serialize = true, deserialize = true)
+    @SerializedName("username")
     private String userName;
     @Expose(serialize = true, deserialize = true)
     private String imageURL;

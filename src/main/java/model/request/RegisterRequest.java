@@ -23,7 +23,7 @@ public class RegisterRequest {
     }
 
 
-    public byte[] getImage() {
+    public String getImage() {
         return image;
     }
 
@@ -31,9 +31,9 @@ public class RegisterRequest {
     private String password;
     private String firstName;
     private String lastName;
-    private byte[] image;
+    private String image;
 
-    public RegisterRequest(String username, String password, String firstName, String lastName, byte[] image) {
+    public RegisterRequest(String username, String password, String firstName, String lastName, String image) {
         this.username = username;
         this.password = password;
         this.firstName = firstName;
@@ -58,7 +58,7 @@ public class RegisterRequest {
         this.lastName = lastName;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 }

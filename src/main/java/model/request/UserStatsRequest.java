@@ -21,4 +21,14 @@ public class UserStatsRequest {
 
     private User toFindOf;
 
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
+
+    private String authToken;
+
 }

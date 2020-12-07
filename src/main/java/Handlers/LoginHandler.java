@@ -1,5 +1,6 @@
 package Handlers;
 
+import DAO.AuthDAO;
 import DAO.UserDAO;
 import Services.LoginService;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -14,6 +15,6 @@ public class LoginHandler implements RequestHandler<LoginRequest,LoginResponse> 
 
     @Override
     public LoginResponse handleRequest(LoginRequest loginRequest, Context context) {
-        return new LoginService(new UserDAO()).login(loginRequest);
+        return new LoginService(new UserDAO(),new AuthDAO()).login(loginRequest);
     }
 }

@@ -1,6 +1,7 @@
 package Services;
 
-import DAO.FollowerDAO;
+import DAO.BeingFollowedDAO;
+import DAO.FollowingDAO;
 import junit.framework.TestCase;
 import model.Response.FollowerResponse;
 import model.request.FollowerRequest;
@@ -12,7 +13,7 @@ public class FollowerServiceTest extends TestCase {
 
     public void testGetFollower() {
 
-        FollowerDAO mock = mock(FollowerDAO.class);
+        BeingFollowedDAO mock = mock(BeingFollowedDAO.class);
         FollowerRequest in = new FollowerRequest();
         in.setMaxToGet(65);
 

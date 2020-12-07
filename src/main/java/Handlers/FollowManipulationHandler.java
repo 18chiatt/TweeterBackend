@@ -1,6 +1,7 @@
 package Handlers;
 
 import DAO.AuthDAO;
+import DAO.BeingFollowedDAO;
 import DAO.FollowingDAO;
 import Services.FollowManipulationService;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -14,6 +15,6 @@ public class FollowManipulationHandler implements RequestHandler<FollowManipulat
 
     @Override
     public FollowManipulationResult handleRequest(FollowManipulationRequest followManipulationRequest, Context context) {
-        return new FollowManipulationService(new AuthDAO(),new FollowingDAO()).manipulateFollows(followManipulationRequest);
+        return new FollowManipulationService(new AuthDAO(),new FollowingDAO(),new BeingFollowedDAO()).manipulateFollows(followManipulationRequest);
     }
 }

@@ -1,5 +1,6 @@
 package Services;
 
+import DAO.AuthDAO;
 import DAO.UserDAO;
 import junit.framework.TestCase;
 import model.Response.LoginResponse;
@@ -24,7 +25,7 @@ public class LoginServiceTest extends TestCase {
 
         when(mock.login(in)).thenReturn(resp);
 
-        LoginService toTest = new LoginService(mock);
+        LoginService toTest = new LoginService(mock, new AuthDAO());
 
         assertEquals(resp,toTest.login(in));
     }

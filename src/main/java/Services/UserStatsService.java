@@ -1,16 +1,20 @@
 package Services;
 
-import DAO.UserStatsDAO;
+import DAO.AuthDAO;
+import DAO.UserDAO;
 import model.Response.UserStatsResponse;
 import model.request.UserStatsRequest;
 
 public class UserStatsService {
-    public UserStatsService(UserStatsDAO toUse) {
+    public UserStatsService(UserDAO toUse, AuthDAO toRefresh) {
         this.toUse = toUse;
+        this.toRefreshWith = toRefresh;
     }
 
-    UserStatsDAO toUse;
+    UserDAO toUse;
+    AuthDAO toRefreshWith;
     public UserStatsResponse getUserStats(UserStatsRequest req){
+        toRefreshWith.refresh(req.getAuthToken());
         return toUse.getUserStats(req);
     }
 }
