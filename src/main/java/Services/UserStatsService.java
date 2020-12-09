@@ -14,7 +14,8 @@ public class UserStatsService {
     UserDAO toUse;
     AuthDAO toRefreshWith;
     public UserStatsResponse getUserStats(UserStatsRequest req){
-        toRefreshWith.refresh(req.getAuthToken());
+
+        toRefreshWith.refresh(req.getAuthToken(),req.getWhoAsked());
         return toUse.getUserStats(req);
     }
 }

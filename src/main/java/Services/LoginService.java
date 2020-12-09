@@ -16,10 +16,13 @@ public class LoginService {
     UserDAO toUse;
     public LoginResponse login(LoginRequest req){
         if(toValidateWith.correctPassword(req)){
-            return toUse.login(req);
+            LoginResponse resp = toUse.login(req);
+            resp.setAuthToken(toValidateWith.getCreateAuthToken(req));
+            System.out.println("Should be correct!");
+            return resp;
         }
+        System.out.println("Password was incorrect");
         return new LoginResponse(null,null,false);
-
 
     }
 }

@@ -1,5 +1,6 @@
 package DAO;
 
+import Generators.WordGenerator;
 import model.Response.PostStatusResponse;
 import model.Response.StoryResponse;
 import model.domain.Status;
@@ -11,51 +12,50 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class StoryDAOTest {
-    User me = new User("Chase","Hiatt","18chiatt","https://s3.amazonaws.com/chasehiattbucket/images/18chiatt.png");
-    User bill = new User("Bill","Science","bill","https://s3.amazonaws.com/chasehiattbucket/images/bill.png");
-    User bimboJoe = new User("Joe","Bimbo","bimboJoe","https://s3.amazonaws.com/chasehiattbucket/images/bimboJoe.png");
+    User testUser = new User("Story","Man","Story","https://chasehiattbucket.s3.amazonaws.com/images/Story.png");
+    User myUser = new User("Test","User","Chase","https://s3.amazonaws.com/chasehiattbucket/images/Chase.png");
+    StoryDAO toTest = new StoryDAO();
+
 
     @Test
     public void getStory() {
-        User myUser = me;
-        StoryRequest req = new StoryRequest(1,myUser,null);
-        StoryResponse response = new StoryDAO().getStory(req);
 
-        Status previousLast = response.getTheStatus().get(0);
-        req = new StoryRequest(1,myUser,previousLast);
-        response = new StoryDAO().getStory(req);
-        previousLast = response.getTheStatus().get(0);
-        req = new StoryRequest(1,myUser,previousLast);
-        response = new StoryDAO().getStory(req);
-        System.out.println(response.getTheStatus().get(0).getMessage());
+
+        StoryRequest req = new StoryRequest(1,myUser,null);
+        StoryResponse resp = toTest.getStory(req);
+        assertEquals(resp.getTheStatus().get(0).getSaidBy(),myUser);
+        assert(resp.getTheStatus().get(0).getMessage().equals("Second post by yours truly :)"));
+        req.setPreviousLast(resp.getTheStatus().get(0));
+
+        resp = toTest.getStory(req);
+        assertEquals(resp.getTheStatus().get(0).getSaidBy(),myUser);
+        assert(resp.getTheStatus().get(0).getMessage().equals("New Post by my favorite user, Test !"));
+
+
     }
 
     @Test
     public void postStatus() {
-        User myUser = me;
-        Status toPost = new Status("new message, i love bacon",  650000000L,myUser);
-        PostStatusRequest req = new PostStatusRequest(toPost,"asdf");
-        //new StoryDAO().postStatus(req);
 
-        toPost = new Status("This bacon really is quite good",65000000000L, myUser);
-        req = new PostStatusRequest(toPost,"asdf");
-        new StoryDAO().postStatus(req);
+        StringBuilder builder = new StringBuilder();
+        for(int i=0; i< 10; i++){
+            builder.append(WordGenerator.getWord());
+        }
 
-        toPost = new Status("YetAnotherPost",700000L, myUser);
-        req = new PostStatusRequest(toPost,"asdf");
-        //new StoryDAO().postStatus(req);
 
-        toPost = new Status("This is a legitimately new post",70000010L, myUser);
-        req = new PostStatusRequest(toPost,"asdf");
-        //new StoryDAO().postStatus(req);
+        Status newStatus = new Status(builder.toString(),System.currentTimeMillis()/1000,testUser);
+        PostStatusRequest request = new PostStatusRequest();
+        request.setTheStatus(newStatus);
 
-        toPost = new Status("OK GOOGLE THIS POST IS EPIC!",70100010L, myUser);
-        req = new PostStatusRequest(toPost,"asdf");
-        //new StoryDAO().postStatus(req);
+        request.setAuthToken("fakeAuth LOL");
+        PostStatusResponse response =  toTest.postStatus(request);
+        assert(response.isWasSuccess());
 
-        toPost = new Status("finalPost",7000900L, myUser);
-        req = new PostStatusRequest(toPost,"asdf");
-        //new StoryDAO().postStatus(req);
+        StoryRequest storyRequest = new StoryRequest(1,testUser,null);
+        StoryResponse storyResponse = toTest.getStory(storyRequest);
+        assertEquals(storyResponse.getTheStatus().get(0).getSaidBy(),testUser);
+        assertEquals(storyResponse.getTheStatus().get(0).getMessage(),builder.toString());
+
 
     }
 }

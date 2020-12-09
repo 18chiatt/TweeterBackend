@@ -3,24 +3,22 @@ package Services;
 import DAO.AuthDAO;
 import DAO.BeingFollowedDAO;
 import DAO.FollowingDAO;
+import DAO.ManipulationDAO;
 import model.Response.FollowManipulationResult;
 import model.request.FollowManipulationRequest;
 
 public class FollowManipulationService {
     AuthDAO authToUse;
-    FollowingDAO followingToUse;
-    BeingFollowedDAO beingFollowedToUse;
+    ManipulationDAO manip;
 
-    public FollowManipulationService(AuthDAO authToUse, FollowingDAO followingToUse, BeingFollowedDAO beingFollowed) {
+    public FollowManipulationService(AuthDAO authToUse, ManipulationDAO manip) {
         this.authToUse = authToUse;
-        this.followingToUse = followingToUse;
-        this.beingFollowedToUse = beingFollowed;
+        this.manip = manip;
     }
 
     public FollowManipulationResult manipulateFollows(FollowManipulationRequest req){
         if(authToUse.isAuthorized(req.getPersonWhoFollows(),req.getAuthToken())){
-            beingFollowedToUse.manipulateFollows(req);
-            return followingToUse.manipulateFollows(req);
+            return manip.manipulate(req);
         }
         return new FollowManipulationResult(false,false);
     }

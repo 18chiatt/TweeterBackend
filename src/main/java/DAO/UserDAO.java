@@ -1,11 +1,9 @@
 package DAO;
 
-import DAO.Fake.ServerFake;
-import DAO.Fake.ServerFakeFactory;
+import DAO.util.ConnectionHolder;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.google.gson.Gson;
 import model.Response.LoginResponse;
 import model.Response.RegisterResponse;
 import model.Response.UserResponse;
@@ -17,9 +15,7 @@ import model.request.UserRequest;
 import model.request.UserStatsRequest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class UserDAO {
     //private String alias;
@@ -30,7 +26,8 @@ public class UserDAO {
         if(item == null){
             return new UserResponse(null,false);
         }
-        return ConnectionHolder.getGson().fromJson(item.toJSON(),UserResponse.class);
+        UserResponse toRespondWith = new UserResponse(ConnectionHolder.getGson().fromJson(item.toJSON(),User.class),true);
+        return toRespondWith;
     }
 
     public LoginResponse login(LoginRequest req){
@@ -56,9 +53,9 @@ public class UserDAO {
     }
 
     public RegisterResponse register (RegisterRequest req,String url){
-        if(!isFree(req.getUsername())){
-            return new RegisterResponse(false);
-        }
+        //if(!isFree(req.getUsername())){
+        //    return new RegisterResponse(false); //FIXME reenable checking
+        //}
         Table table = ConnectionHolder.getTable("User");
 
 
@@ -66,7 +63,7 @@ public class UserDAO {
         PutItemOutcome outcome;
         try {
             outcome = table.putItem(new Item().withPrimaryKey("username",req.getUsername())
-                    .with("Image",url).with("firstName",req.getFirstName()).with("lastName",req.getLastName()).with("numFollowers",0).with("numPeopleFollowing",0));
+                    .with("imageURL",url).with("firstName",req.getFirstName()).with("lastName",req.getLastName()).with("numFollowers",0).with("numPeopleFollowing",0));
         } catch(Exception e){
             System.out.println(e.getMessage());
             "".charAt(5);
@@ -96,11 +93,12 @@ public class UserDAO {
 
     }
 
-    public List<User> getUsers(List<String> usernames){
+   /* public List<User> getUsers(List<String> usernames){
         List<User> toReturn = new ArrayList<>();
         Table table = ConnectionHolder.getTable("User");
         Gson gson = ConnectionHolder.getGson();
         for(String s : usernames){
+            System.out.println(s);
             Item item = table.getItem("username",s);
             if(item == null){
                 System.out.println("Unable to find correct users!");
@@ -110,7 +108,7 @@ public class UserDAO {
             toReturn.add(u);
         }
         return toReturn;
-    }
+    }*/
 
     public void incrementFollowers(String alias){
         Table table = ConnectionHolder.getTable("User");
@@ -143,6 +141,21 @@ public class UserDAO {
                 .withUpdateExpression("set numPeopleFollowing = numPeopleFollowing + :val")
                 .withValueMap(new ValueMap().withNumber(":val", -1));
         table.updateItem(updateItemSpec);
+    }
+
+    public void registerBunch(List<RegisterRequest> toProcess, String theURL){
+        List<Item> toSend = new ArrayList<>();
+
+        for(RegisterRequest registerRequest : toProcess){
+            Item newItem = new Item().withPrimaryKey("username",registerRequest.getUsername())
+                    .with("imageURL",theURL).with("firstName",registerRequest.getFirstName()).with("lastName",registerRequest.getLastName()).with("numFollowers",0).with("numPeopleFollowing",0);
+            toSend.add(newItem);
+        }
+
+        TableWriteItems batchWrite = new TableWriteItems("User").withItemsToPut(toSend);
+
+
+
     }
 
 }

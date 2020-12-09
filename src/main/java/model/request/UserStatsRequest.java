@@ -31,4 +31,14 @@ public class UserStatsRequest {
 
     private String authToken;
 
+    public User getWhoAsked() {
+        return whoAsked;
+    }
+
+    public void setWhoAsked(User whoAsked) {
+        this.whoAsked = whoAsked;
+    }
+
+    private User whoAsked;
+
 }

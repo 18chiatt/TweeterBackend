@@ -14,18 +14,22 @@ public class LoginServiceTest extends TestCase {
     public void testLogin() {
 
         UserDAO mock = mock(UserDAO.class);
+        AuthDAO mockAuth = mock(AuthDAO.class);
 
 
         LoginRequest in = new LoginRequest();
         in.setPassword("1234");
         in.setUserName("12345");
 
+        when(mockAuth.correctPassword(in)).thenReturn(true);
+
+
         LoginResponse resp = new LoginResponse(null,"1234",true);
 
 
         when(mock.login(in)).thenReturn(resp);
 
-        LoginService toTest = new LoginService(mock, new AuthDAO());
+        LoginService toTest = new LoginService(mock, mockAuth);
 
         assertEquals(resp,toTest.login(in));
     }

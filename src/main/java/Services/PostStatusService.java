@@ -16,8 +16,10 @@ public class PostStatusService {
 
     public PostStatusResponse postStatus(PostStatusRequest req){
         if(authToUse.isAuthorized(req.getTheStatus().getSaidBy(),req.getAuthToken())){
+            System.out.println("Authorized!");
             return statusToUse.postStatus(req);
         }
+        System.out.println("Is not authorized!");
         return new PostStatusResponse(false);
     }
 

@@ -1,5 +1,6 @@
 package Services;
 
+import DAO.AuthDAO;
 import DAO.ImageDAO;
 import DAO.UserDAO;
 import model.Response.RegisterResponse;
@@ -11,10 +12,12 @@ import java.util.Base64;
 public class RegisterService {
     UserDAO toUse;
     ImageDAO imageDAO;
+    AuthDAO authDao;
 
-    public RegisterService(UserDAO toUse, ImageDAO imageDao) {
+    public RegisterService(UserDAO toUse, ImageDAO imageDao,AuthDAO authDao) {
         this.toUse = toUse;
         this.imageDAO = imageDao;
+        this.authDao = authDao;
     }
 
     public RegisterResponse register(RegisterRequest req){
@@ -28,6 +31,7 @@ public class RegisterService {
 
 
         RegisterResponse resp = toUse.register(req,URL);
+        authDao.register(req);
 
 
         return resp;

@@ -1,19 +1,14 @@
 package DAO;
 
-import DAO.Fake.ServerFakeFactory;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import DAO.util.ConnectionHolder;
 import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.DeleteItemRequest;
-import com.amazonaws.services.dynamodbv2.model.QueryResult;
-import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
+import com.google.gson.Gson;
 import model.Response.FollowManipulationResult;
-import model.Response.FollowerResponse;
 import model.Response.FollowingResponse;
 import model.Response.FollowingStatusResponse;
+import model.domain.User;
 import model.request.*;
 
 import java.util.*;
@@ -46,35 +41,46 @@ public class FollowingDAO {
 
         ItemCollection<QueryOutcome> items =  table.query(spec);
         List<String> usersToReturn = new ArrayList<>();
+        List<User> toReturn = new ArrayList<>();
+        Gson gson = ConnectionHolder.getGson();
         for(Item item : items){
-            usersToReturn.add((String) item.get("Following"));
+            String json = item.getString("BeingFollowedJSON");
+            User newUser = gson.fromJson(json,User.class);
+            toReturn.add(newUser);
         }
         System.out.println(usersToReturn.toString());
 
-        return new FollowingResponse(new UserDAO().getUsers(usersToReturn),usersToReturn.size() == req.getLimit());
+        return new FollowingResponse(toReturn,usersToReturn.size() == req.getLimit());
     }
 
     public FollowManipulationResult manipulateFollows(FollowManipulationRequest req){
-        AmazonDynamoDB client = ConnectionHolder.getAmazon();
-        Table table = ConnectionHolder.getTable("Following");
-        String beingFollowed = req.getPersonWhoIsFollowed().getUserName();
         String following = req.getPersonWhoFollows().getUserName();
+        String beingFollowed = req.getPersonWhoIsFollowed().getUserName();
+
+        Table table = ConnectionHolder.getTable("Following");
 
         Map<String,String> nameMap = new HashMap<>();
-        nameMap.put("#f","Follower");
-        nameMap.put("#bf","BeingFollowed");
+        nameMap.put("#follower","Follower");
+        nameMap.put("#beingFollowed","BeingFollowed");
 
         Map<String,Object> valueMap = new HashMap<>();
-        valueMap.put(":fa",following);
-        valueMap.put(":bfa",beingFollowed);
-        QuerySpec spec = new QuerySpec().withKeyConditionExpression("#f = :fa and #bf = :bfa").withNameMap(nameMap).withValueMap(valueMap);
+        valueMap.put(":followerAlias",req.getPersonWhoFollows().getUserName());
+        valueMap.put(":beingFollowedAlias",req.getPersonWhoIsFollowed().getUserName());
+        QuerySpec spec = new QuerySpec().withKeyConditionExpression("#follower = :followerAlias and #beingFollowed = :beingFollowedAlias").withNameMap(nameMap).withValueMap(valueMap);
 
         ItemCollection<QueryOutcome> items = table.query(spec);
+
+        int count =0;
+        for(Item i : items){
+            count +=1;
+            break;
+        }
+
         if(req.isAddFollow()){
 
 
 
-            if(items.getAccumulatedItemCount() != 0){
+            if(count != 0){
                 //if that follow already exists
                 return new FollowManipulationResult(true,true);
             }
@@ -89,15 +95,14 @@ public class FollowingDAO {
             
 
         } else {
-            if(items.getAccumulatedItemCount() == 0){
+            if(count == 0){
+                System.out.println("Unable to find the follow!");
                 return new FollowManipulationResult(false,false);
             }
 
-            Map<String, AttributeValue> key = new HashMap<>();
-            key.put("Follower", new AttributeValue(following) );
-            key.put("BeingFolowed", new AttributeValue(beingFollowed) );
-            DeleteItemRequest delete = new DeleteItemRequest().withTableName("Following").withKey(key);
-            client.deleteItem(delete);
+
+            DeleteItemSpec delSpec = new DeleteItemSpec().withPrimaryKey("Follower",following,"BeingFollowed",beingFollowed);
+            table.deleteItem(delSpec);
 
             new UserDAO().decrementFollowers(beingFollowed);
             new UserDAO().decrementFollowing(following);
@@ -108,12 +113,30 @@ public class FollowingDAO {
     }
 
     public FollowingStatusResponse getFollowingStatus(FollowingStatusRequest req){
-        return ServerFakeFactory.getInstance().getFollowingStatus(req);
+        User followsMaybe= req.getPersonWhoFollowsMaybe();
+        User followedMaybe = req.getPersonWhoIsFollowedMaybe();
+        Table table = ConnectionHolder.getTable("Following");
+
+        Map<String,String> nameMap = new HashMap<>();
+        nameMap.put("#follower","Follower");
+        nameMap.put("#beingFollowed","BeingFollowed");
+
+        Map<String,Object> valueMap = new HashMap<>();
+        valueMap.put(":followerAlias",followsMaybe.getUserName());
+        valueMap.put(":beingFollowedAlias",followedMaybe.getUserName());
+        QuerySpec spec = new QuerySpec().withKeyConditionExpression("#follower = :followerAlias and #beingFollowed = :beingFollowedAlias").withNameMap(nameMap).withValueMap(valueMap);
+
+        ItemCollection<QueryOutcome> items = table.query(spec);
+        for(Item item : items){
+            return new FollowingStatusResponse(true);
+        }
+        return new FollowingStatusResponse(false);
+
+
+
     }
 
-    public FollowerResponse getFollower(FollowerRequest req) {
-        return ServerFakeFactory.getInstance().getFollowers(req);
-    }
+
 
 
 

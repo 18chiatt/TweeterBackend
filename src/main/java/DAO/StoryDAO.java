@@ -1,6 +1,6 @@
 package DAO;
 
-import DAO.Fake.ServerFakeFactory;
+import DAO.util.ConnectionHolder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
@@ -8,16 +8,13 @@ import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
-import model.Response.FollowerResponse;
 import model.Response.PostStatusResponse;
 import model.Response.StoryResponse;
 import model.domain.Status;
 import model.domain.User;
 import model.request.PostStatusRequest;
-import model.request.RegisterRequest;
 import model.request.StoryRequest;
 
 import java.util.*;
@@ -38,29 +35,30 @@ public class StoryDAO {
             nameMap.put("#timestamp","timestamp");
         }
 
-        QuerySpec spec = new QuerySpec().withKeyConditionExpression("#username = :username").withNameMap(nameMap) .withValueMap(valueMap).withMaxResultSize(req.getMaxToGet());
+        QuerySpec spec = new QuerySpec().withKeyConditionExpression("#username = :username").withNameMap(nameMap) .withValueMap(valueMap).withMaxResultSize(req.getMaxToGet()).withScanIndexForward(false);
 
         if(req.getPreviousLast() != null){
-            spec.withKeyConditionExpression("#username = :username and #timestamp > :plt");
+            spec.withKeyConditionExpression("#username = :username and #timestamp < :plt");
         }
 
 
 
 
         ItemCollection<QueryOutcome> items =  table.query(spec);
-        List<String> usersToGet = new ArrayList<>();
+        List<User> users = new ArrayList<>();
 
         for(Item item : items){
-            usersToGet.add((String) item.get("username"));
+            User newUser = new User(item.getString("firstName"),item.getString("lastName"),item.getString("username"),item.getString("imageURL"));
+            users.add(newUser);
         }
 
-        List<User> usersToUse = new UserDAO().getUsers(usersToGet);
         List<Status> toReturn = new ArrayList<>();
         int index =0;
+
         for(Item item : items){
             Long timestamp = item.getLong("timestamp");
             String message = item.getString("message");
-            Status toPush = new Status(message,timestamp,usersToUse.get(index));
+            Status toPush = new Status(message,timestamp,users.get(index));
             toReturn.add(toPush);
             index++;
         }

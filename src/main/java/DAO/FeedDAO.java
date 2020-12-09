@@ -1,15 +1,12 @@
 package DAO;
 
-import DAO.Fake.ServerFakeFactory;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.ItemCollection;
-import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
-import com.amazonaws.services.dynamodbv2.document.Table;
+import DAO.util.ConnectionHolder;
+import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.Response.FeedResponse;
-import model.Response.FollowerResponse;
 import model.domain.Status;
 import model.domain.User;
 import model.request.FeedRequest;
@@ -68,11 +65,7 @@ public class FeedDAO {
 
     }
 
-    public void removePosts(String usedToFollow,String usedToBeFollowed){
-        
-        //FIXME delete all feed instances written by usedToBeFollowed
-        //delete via SQS
-    }
+
 
     // follower,incoming.getUser(),incoming.getMessage(),incoming.getTimestamp()
 
@@ -81,8 +74,46 @@ public class FeedDAO {
         Item newItem = new Item().withPrimaryKey("username",follower.getUserName()).withLong("timestamp",whenTheySaidIt)
                 .withString("message",whatTheySaid)
                 .with("saidByJSON",gson.toJson(personWhoIsFollowed))
-                .with("followerJSON",gson.toJson(follower));
+                .with("followerJSON",gson.toJson(follower))
+                .with("saidBy",personWhoIsFollowed.getUserName());
 
         table.putItem(newItem);
+    }
+
+    public void postStatusToFeed(List<User> users, User personWhoIsFollowed, String whatTheySaid, Long whenTheySaidIt, DynamoDB db)  {
+
+        if(users.size() > 25){
+            System.out.println("BAD ERROR");
+        }
+        List<Item> toPut =  new ArrayList<>();
+
+        for(User curr : users){
+            Item newItem  = new Item().withPrimaryKey("username",curr.getUserName()).withLong("timestamp",whenTheySaidIt)
+                    .withString("message",whatTheySaid)
+                    .with("saidByJSON",gson.toJson(personWhoIsFollowed))
+                    .with("followerJSON",gson.toJson(curr))
+                    .with("saidBy",personWhoIsFollowed.getUserName());
+            toPut.add(newItem);
+
+        }
+
+
+        TableWriteItems batchWrite = new TableWriteItems("Feed").withItemsToPut(toPut);
+        BatchWriteItemOutcome outcome = db.batchWriteItem(batchWrite);
+        long toSleep = 5;
+
+        while(outcome.getUnprocessedItems().size() > 0){
+            try {
+                Thread.sleep(toSleep);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            outcome = db.batchWriteItemUnprocessed(outcome.getUnprocessedItems());
+            toSleep *=2;
+        }
+
+
+
     }
 }

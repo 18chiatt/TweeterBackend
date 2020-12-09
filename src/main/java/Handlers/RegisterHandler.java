@@ -14,7 +14,7 @@ public class RegisterHandler implements RequestHandler<RegisterRequest, Register
 
     @Override
     public RegisterResponse handleRequest(RegisterRequest registerRequest, Context context) {
-        return new RegisterService(new UserDAO(),new ImageDAO()).register(registerRequest);
+        return new RegisterService(new UserDAO(),new ImageDAO(), new AuthDAO()).register(registerRequest);
 
     }
 }
